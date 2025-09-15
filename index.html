@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>⭐️YOUNG ALBUM CATALOG⭐️</title>
+    <title>⭐️YOUNG ALBUM⭐️</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js"></script>
     <style>
@@ -184,13 +184,16 @@
             // Touch events for mobile
             let touchStartX = 0;
             let touchEndX = 0;
+            let isSwiping = false;
             
             document.getElementById('carouselContainer').addEventListener('touchstart', (e) => {
                 touchStartX = e.changedTouches[0].screenX;
                 carousel.style.transition = 'none';
+                isSwiping = true;
             }, false);
             
             document.getElementById('carouselContainer').addEventListener('touchmove', (e) => {
+                if (!isSwiping) return;
                 touchMoveX = e.changedTouches[0].screenX;
                 const diff = touchMoveX - touchStartX;
                 const percentage = 100 / imageCount * (diff / window.innerWidth);
@@ -198,11 +201,15 @@
             }, false);
             
             document.getElementById('carouselContainer').addEventListener('touchend', (e) => {
+                if (!isSwiping) return;
+                isSwiping = false;
                 touchEndX = e.changedTouches[0].screenX;
                 carousel.style.transition = 'transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
                 
                 const diff = touchEndX - touchStartX;
-                if (Math.abs(diff) > 30) { // Further reduced minimum swipe distance
+                const threshold = window.innerWidth * 0.2; // 20% of screen width
+                
+                if (Math.abs(diff) > threshold) {
                     handleSwipe();
                 } else {
                     updateCarousel(); // Return to current slide if swipe was too small
@@ -211,9 +218,11 @@
             
             function handleSwipe() {
                 const diff = touchEndX - touchStartX;
-                if (diff < -30) { // Further reduced threshold for swipe detection
+                const threshold = window.innerWidth * 0.2; // 20% of screen width
+                
+                if (diff < -threshold) {
                     nextSlide();
-                } else if (diff > 30) {
+                } else if (diff > threshold) {
                     prevSlide();
                 }
             }
