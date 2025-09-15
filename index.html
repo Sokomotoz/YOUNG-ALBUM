@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Image Carousel</title>
+    <title>Young Album</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js"></script>
     <style>
@@ -50,10 +50,36 @@
             width: 16px;
             border-radius: 4px;
         }
+        .order-button {
+            position: absolute;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background-color: #8a2be2;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 10;
+            animation: pulse 2s infinite, slideUp 0.5s forwards 0.3s;
+            box-shadow: 0 0 15px rgba(138, 43, 226, 0.7);
+        }
+        @keyframes pulse {
+            0% { transform: translateX(-50%) scale(1); }
+            50% { transform: translateX(-50%) scale(1.05); }
+            100% { transform: translateX(-50%) scale(1); }
+        }
+        @keyframes slideUp {
+            to { transform: translateX(-50%) translateY(0); }
+        }
     </style>
 </head>
 <body class="bg-black">
     <div class="carousel-container" id="carouselContainer">
+        <button class="order-button" onclick="window.open('https://t.me/werahere', '_blank')">Заказать</button>
         <div class="carousel" id="carousel">
             <!-- Images will be loaded dynamically -->
         </div>
@@ -92,8 +118,12 @@
             // Set first indicator as active
             updateIndicators();
             
-            // Initialize Hammer.js for swipe gestures
-            const hammer = new Hammer(document.getElementById('carouselContainer'));
+            // Initialize Hammer.js for swipe gestures with adjusted sensitivity
+            const hammer = new Hammer(document.getElementById('carouselContainer'), {
+                recognizers: [
+                    [Hammer.Swipe, { direction: Hammer.DIRECTION_HORIZONTAL, threshold: 100, velocity: 0.1 }]
+                ]
+            });
             hammer.on('swipeleft', () => nextSlide());
             hammer.on('swiperight', () => prevSlide());
             
@@ -107,7 +137,9 @@
             
             document.getElementById('carouselContainer').addEventListener('touchend', (e) => {
                 touchEndX = e.changedTouches[0].screenX;
-                handleSwipe();
+                if (Math.abs(touchEndX - touchStartX) > 100) { // Minimum swipe distance
+                    handleSwipe();
+                }
             }, false);
             
             function handleSwipe() {
