@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Young Album</title>
+    <title>YOUNG ALBUM</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js"></script>
     <style>
@@ -13,9 +13,33 @@
             height: 100vh;
             width: 100vw;
         }
+        .carousel-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 40px;
+            height: 40px;
+            background-color: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .carousel-arrow:hover {
+            background-color: rgba(255, 255, 255, 0.8);
+        }
+        .carousel-arrow.left {
+            left: 15px;
+        }
+        .carousel-arrow.right {
+            right: 15px;
+        }
         .carousel {
             display: flex;
-            transition: transform 0.3s ease-out;
+            transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             height: 100%;
         }
         .carousel-item {
@@ -80,6 +104,8 @@
 <body class="bg-black">
     <div class="carousel-container" id="carouselContainer">
         <button class="order-button" onclick="window.open('https://t.me/werahere', '_blank')">Заказать</button>
+        <div class="carousel-arrow left" id="prevArrow">←</div>
+        <div class="carousel-arrow right" id="nextArrow">→</div>
         <div class="carousel" id="carousel">
             <!-- Images will be loaded dynamically -->
         </div>
@@ -91,7 +117,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Get all images from the directory (assuming they're named sequentially)
-            const imageCount = 13; // Change this to your actual image count
+            const imageCount = 5; // Change this to your actual image count
             const carousel = document.getElementById('carousel');
             const indicatorsContainer = document.getElementById('indicators');
             let currentIndex = 0;
@@ -121,7 +147,7 @@
             // Initialize Hammer.js for swipe gestures with adjusted sensitivity
             const hammer = new Hammer(document.getElementById('carouselContainer'), {
                 recognizers: [
-                    [Hammer.Swipe, { direction: Hammer.DIRECTION_HORIZONTAL, threshold: 100, velocity: 0.1 }]
+                    [Hammer.Swipe, { direction: Hammer.DIRECTION_HORIZONTAL, threshold: 150, velocity: 0.05 }]
                 ]
             });
             hammer.on('swipeleft', () => nextSlide());
@@ -137,7 +163,7 @@
             
             document.getElementById('carouselContainer').addEventListener('touchend', (e) => {
                 touchEndX = e.changedTouches[0].screenX;
-                if (Math.abs(touchEndX - touchStartX) > 100) { // Minimum swipe distance
+                if (Math.abs(touchEndX - touchStartX) > 150) { // Increased minimum swipe distance
                     handleSwipe();
                 }
             }, false);
@@ -174,6 +200,10 @@
                 carousel.style.transform = `translateX(-${currentIndex * 100}%)`;
                 updateIndicators();
             }
+
+            // Add arrow click handlers
+            document.getElementById('prevArrow').addEventListener('click', prevSlide);
+            document.getElementById('nextArrow').addEventListener('click', nextSlide);
             
             function updateIndicators() {
                 const indicators = document.querySelectorAll('.indicator');
