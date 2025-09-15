@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>YOUNG ALBUM CATALOG</title>
+    <title>⭐️YOUNG ALBUM CATALOG⭐️</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js"></script>
     <style>
@@ -118,7 +118,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Get all images from the directory (assuming they're named sequentially)
-            const imageCount = 13; // Change this to your actual image count
+            const imageCount = 13; // Updated to 13 images
             const carousel = document.getElementById('carousel');
             const indicatorsContainer = document.getElementById('indicators');
             let currentIndex = 0;
@@ -157,13 +157,17 @@
             hammer.on('panstart pancancel panend', (e) => {
                 if (e.type === 'panstart') {
                     panDelta = 0;
+                    carousel.style.transition = 'none';
                 } else if (e.type === 'panend') {
-                    if (Math.abs(panDelta) > 50) {
+                    carousel.style.transition = 'transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+                    if (Math.abs(panDelta) > 30) { // Reduced threshold for swipe detection
                         if (panDelta > 0) {
                             prevSlide();
                         } else {
                             nextSlide();
                         }
+                    } else {
+                        updateCarousel(); // Return to current slide if swipe was too small
                     }
                 }
             });
@@ -173,8 +177,9 @@
                 const percentage = 100 / imageCount * (panDelta / window.innerWidth);
                 carousel.style.transform = `translateX(calc(-${currentIndex * 100}% + ${percentage}%))`;
             });
-            hammer.on('swipeleft', () => nextSlide());
-            hammer.on('swiperight', () => prevSlide());
+            
+            // Disable swipe events to prevent double triggers
+            hammer.on('swipeleft swipeleft', () => {});
             
             // Touch events for mobile
             let touchStartX = 0;
@@ -197,7 +202,7 @@
                 carousel.style.transition = 'transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
                 
                 const diff = touchEndX - touchStartX;
-                if (Math.abs(diff) > 50) { // Reduced minimum swipe distance
+                if (Math.abs(diff) > 30) { // Further reduced minimum swipe distance
                     handleSwipe();
                 } else {
                     updateCarousel(); // Return to current slide if swipe was too small
@@ -206,9 +211,9 @@
             
             function handleSwipe() {
                 const diff = touchEndX - touchStartX;
-                if (diff < -50) { // More precise swipe detection
+                if (diff < -30) { // Further reduced threshold for swipe detection
                     nextSlide();
-                } else if (diff > 50) {
+                } else if (diff > 30) {
                     prevSlide();
                 }
             }
