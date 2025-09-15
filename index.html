@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>YOUNG ALBUM Catalog</title>
+    <title>YOUNG ALBUM CATALOG</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js"></script>
     <style>
@@ -19,7 +19,8 @@
             transform: translateY(-50%);
             width: 40px;
             height: 40px;
-            background-color: rgba(255, 255, 255, 0.5);
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
             border-radius: 50%;
             display: flex;
             justify-content: center;
@@ -29,7 +30,7 @@
             transition: all 0.3s ease;
         }
         .carousel-arrow:hover {
-            background-color: rgba(255, 255, 255, 0.8);
+            background-color: rgba(0, 0, 0, 0.9);
         }
         .carousel-arrow.left {
             left: 15px;
@@ -147,8 +148,30 @@
             // Initialize Hammer.js for swipe gestures with adjusted sensitivity
             const hammer = new Hammer(document.getElementById('carouselContainer'), {
                 recognizers: [
-                    [Hammer.Swipe, { direction: Hammer.DIRECTION_HORIZONTAL, threshold: 150, velocity: 0.05 }]
+                    [Hammer.Pan, { direction: Hammer.DIRECTION_HORIZONTAL, threshold: 0 }],
+                    [Hammer.Swipe, { direction: Hammer.DIRECTION_HORIZONTAL, threshold: 100, velocity: 0.1 }]
                 ]
+            });
+            
+            let panDelta = 0;
+            hammer.on('panstart pancancel panend', (e) => {
+                if (e.type === 'panstart') {
+                    panDelta = 0;
+                } else if (e.type === 'panend') {
+                    if (Math.abs(panDelta) > 50) {
+                        if (panDelta > 0) {
+                            prevSlide();
+                        } else {
+                            nextSlide();
+                        }
+                    }
+                }
+            });
+            
+            hammer.on('pan', (e) => {
+                panDelta = e.deltaX;
+                const percentage = 100 / imageCount * (panDelta / window.innerWidth);
+                carousel.style.transform = `translateX(calc(-${currentIndex * 100}% + ${percentage}%))`;
             });
             hammer.on('swipeleft', () => nextSlide());
             hammer.on('swiperight', () => prevSlide());
@@ -159,20 +182,33 @@
             
             document.getElementById('carouselContainer').addEventListener('touchstart', (e) => {
                 touchStartX = e.changedTouches[0].screenX;
+                carousel.style.transition = 'none';
+            }, false);
+            
+            document.getElementById('carouselContainer').addEventListener('touchmove', (e) => {
+                touchMoveX = e.changedTouches[0].screenX;
+                const diff = touchMoveX - touchStartX;
+                const percentage = 100 / imageCount * (diff / window.innerWidth);
+                carousel.style.transform = `translateX(calc(-${currentIndex * 100}% + ${percentage}%))`;
             }, false);
             
             document.getElementById('carouselContainer').addEventListener('touchend', (e) => {
                 touchEndX = e.changedTouches[0].screenX;
-                if (Math.abs(touchEndX - touchStartX) > 150) { // Increased minimum swipe distance
+                carousel.style.transition = 'transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+                
+                const diff = touchEndX - touchStartX;
+                if (Math.abs(diff) > 50) { // Reduced minimum swipe distance
                     handleSwipe();
+                } else {
+                    updateCarousel(); // Return to current slide if swipe was too small
                 }
             }, false);
             
             function handleSwipe() {
-                if (touchEndX < touchStartX) {
+                const diff = touchEndX - touchStartX;
+                if (diff < -50) { // More precise swipe detection
                     nextSlide();
-                }
-                if (touchEndX > touchStartX) {
+                } else if (diff > 50) {
                     prevSlide();
                 }
             }
