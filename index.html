@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Image Carousel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js"></script>
+    <style>
+        .carousel-container {
+            overflow: hidden;
+            position: relative;
+            height: 100vh;
+            width: 100vw;
+        }
+        .carousel {
+            display: flex;
+            transition: transform 0.3s ease-out;
+            height: 100%;
+        }
+        .carousel-item {
+            min-width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .carousel-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        .indicator-container {
+            position: absolute;
+            bottom: 20px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+        }
+        .indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.5);
+            transition: all 0.3s ease;
+        }
+        .indicator.active {
+            background-color: white;
+            width: 16px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="bg-black">
+    <div class="carousel-container" id="carouselContainer">
+        <div class="carousel" id="carousel">
+            <!-- Images will be loaded dynamically -->
+        </div>
+        <div class="indicator-container" id="indicators">
+            <!-- Indicators will be loaded dynamically -->
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get all images from the directory (assuming they're named sequentially)
+            const imageCount = 13; // Change this to your actual image count
+            const carousel = document.getElementById('carousel');
+            const indicatorsContainer = document.getElementById('indicators');
+            let currentIndex = 0;
+            
+            // Create carousel items and indicators
+            for (let i = 0; i < imageCount; i++) {
+                // Create image element
+                const imgDiv = document.createElement('div');
+                imgDiv.className = 'carousel-item';
+                const img = document.createElement('img');
+                img.src = `image${i+1}.jpg`; // Assuming images are named image1.jpg, image2.jpg, etc.
+                img.alt = `Image ${i+1}`;
+                imgDiv.appendChild(img);
+                carousel.appendChild(imgDiv);
+                
+                // Create indicator
+                const indicator = document.createElement('div');
+                indicator.className = 'indicator';
+                indicator.dataset.index = i;
+                indicator.addEventListener('click', () => goToSlide(i));
+                indicatorsContainer.appendChild(indicator);
+            }
+            
+            // Set first indicator as active
+            updateIndicators();
+            
+            // Initialize Hammer.js for swipe gestures
+            const hammer = new Hammer(document.getElementById('carouselContainer'));
+            hammer.on('swipeleft', () => nextSlide());
+            hammer.on('swiperight', () => prevSlide());
+            
+            // Touch events for mobile
+            let touchStartX = 0;
+            let touchEndX = 0;
+            
+            document.getElementById('carouselContainer').addEventListener('touchstart', (e) => {
+                touchStartX = e.changedTouches[0].screenX;
+            }, false);
+            
+            document.getElementById('carouselContainer').addEventListener('touchend', (e) => {
+                touchEndX = e.changedTouches[0].screenX;
+                handleSwipe();
+            }, false);
+            
+            function handleSwipe() {
+                if (touchEndX < touchStartX) {
+                    nextSlide();
+                }
+                if (touchEndX > touchStartX) {
+                    prevSlide();
+                }
+            }
+            
+            function nextSlide() {
+                if (currentIndex < imageCount - 1) {
+                    currentIndex++;
+                    updateCarousel();
+                }
+            }
+            
+            function prevSlide() {
+                if (currentIndex > 0) {
+                    currentIndex--;
+                    updateCarousel();
+                }
+            }
+            
+            function goToSlide(index) {
+                currentIndex = index;
+                updateCarousel();
+            }
+            
+            function updateCarousel() {
+                carousel.style.transform = `translateX(-${currentIndex * 100}%)`;
+                updateIndicators();
+            }
+            
+            function updateIndicators() {
+                const indicators = document.querySelectorAll('.indicator');
+                indicators.forEach((indicator, index) => {
+                    if (index === currentIndex) {
+                        indicator.classList.add('active');
+                    } else {
+                        indicator.classList.remove('active');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
